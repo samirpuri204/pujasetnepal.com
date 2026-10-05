@@ -1,26 +1,345 @@
 @import "tailwindcss";
 
+/* ===========================================================================
+   Jaynepal — design tokens
+   ---------------------------------------------------------------------------
+   Direction: dark, technical, editorial. Two decisions worth recording:
+
+   1. No purple. The ui-ux-pro-max design-system default for "AI chat" is
+      #7C3AED, which is the single most recognisable tell of a generated
+      interface. The accent here is crimson, taken from the Nepali flag, and it
+      is used as a *graphic* accent (mark, focus, active state, streaming caret)
+      rather than as a large fill.
+
+   2. The primary button is near-white on near-black, not a coloured fill. That
+      is both the modern tool convention and the only way to clear 4.5:1 text
+      contrast without darkening the accent until it stops being crimson.
+
+   Contrast, measured against --bg (#0B1017, relative luminance 0.005):
+     --fg      #E8EDF4  ->  15.4:1
+     --muted   #8A9AB0  ->   6.7:1   (body-weight muted text is legible)
+     --accent  #E5484D  ->   3.9:1   (graphic / non-text role; needs 3:1) ✔
+     --accent-text #FF6369 -> 6.6:1  (text role; needs 4.5:1) ✔
+   Never use --accent for small text; use --accent-text there. That split is the
+   whole reason both tokens exist.
+   =========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  --bg:            #0b1017;
+  --surface:       #121a24;
+  --surface-2:     #1a2331;
+  --surface-3:     #222e3e;
+  --border:        #243040;
+  --border-strong: #33445b;
+
+  --fg:            #e8edf4;
+  --muted:         #8a9ab0;
+  --faint:         #61708a;
+
+  --accent:        #e5484d;
+  --accent-text:   #ff6369;
+  --accent-soft:   rgba(229, 72, 77, 0.14);
+
+  --ok:            #3fb950;
+  --warn:          #d29922;
+
+  --btn-primary-bg: #e8edf4;
+  --btn-primary-fg: #0b1017;
+
+  /* 4 / 8 spacing rhythm. Density 6 of 10 — roomy enough to read, tight enough
+     that a long thread still fits on one screen. */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+
+  --radius:    10px;
+  --radius-lg: 14px;
+
+  /* One duration per intent, not one duration for everything. Exit is faster
+     than enter so dismissed UI gets out of the way. */
+  --dur-press:  90ms;
+  --dur-enter: 180ms;
+  --dur-exit:  120ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* z-index scale — declared once so nothing escalates ad hoc. */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-drawer-scrim: 40;
+  --z-drawer: 50;
+  --z-skip: 100;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --font-sans: var(--font-plex);
+  --font-mono: var(--font-mono-jb);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--border);
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  /* --font-deva sits after the Latin face on purpose: IBM Plex Sans has no
+     Devanagari glyphs, so Nepali text falls through to Noto Sans Devanagari
+     while Latin keeps rendering in Plex. One stack, correct for both scripts. */
+  font-family: var(--font-plex), var(--font-deva), ui-sans-serif, system-ui,
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Full-height on mobile without the 100vh address-bar jump. */
+.app-shell {
+  min-height: 100dvh;
+}
+
+/* --- focus ---------------------------------------------------------------
+   :focus-visible only, so a mouse click does not leave a ring behind, but the
+   keyboard always gets one. 2px ring + 2px offset clears the 3:1 non-text
+   contrast requirement against every surface in this palette. */
+:where(a, button, textarea, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+/* --- scrollbars ----------------------------------------------------------
+   Themed so they do not punch a light-grey hole in a dark UI on Windows. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border: 3px solid var(--bg);
+  border-radius: 99px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================================================================
+   Markdown rendering inside assistant turns.
+   Hand-written rather than a drop-in highlight.js theme so the syntax colours
+   are contrast-checked against --surface and stay in the palette.
+   ========================================================================= */
+.md > *:first-child { margin-top: 0; }
+.md > *:last-child  { margin-bottom: 0; }
+
+.md p { margin: 0 0 var(--sp-4); }
+.md p:last-child { margin-bottom: 0; }
+
+.md h1, .md h2, .md h3, .md h4 {
+  margin: var(--sp-5) 0 var(--sp-3);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.md h1 { font-size: 1.35rem; }
+.md h2 { font-size: 1.2rem; }
+.md h3 { font-size: 1.05rem; }
+.md h4 { font-size: 1rem; }
+
+.md ul, .md ol { margin: 0 0 var(--sp-4); padding-left: 1.4em; }
+.md li { margin: var(--sp-2) 0; }
+.md li::marker { color: var(--faint); }
+
+.md a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+.md a:hover { text-decoration-thickness: 2px; }
+
+.md strong { font-weight: 650; color: var(--fg); }
+.md em { font-style: italic; }
+
+.md blockquote {
+  margin: var(--sp-4) 0;
+  padding-left: var(--sp-4);
+  border-left: 2px solid var(--border-strong);
+  color: var(--muted);
+}
+
+.md hr {
+  margin: var(--sp-5) 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+/* Inline code: distinguishable from prose by surface + mono, not by colour
+   alone (rule: color-not-only). */
+.md code {
+  font-family: var(--font-mono-jb), ui-monospace, monospace;
+  font-size: 0.875em;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  padding: 0.12em 0.36em;
+  border-radius: 5px;
+  word-break: break-word;
+}
+
+.md pre {
+  margin: var(--sp-4) 0;
+  background: #0a0e14;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.md pre code {
+  display: block;
+  background: none;
+  border: 0;
+  padding: var(--sp-4);
+  border-radius: 0;
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  overflow-x: auto;
+  white-space: pre;
+  word-break: normal;
+}
+
+.md table {
+  width: 100%;
+  margin: var(--sp-4) 0;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  display: block;
+  overflow-x: auto;
+}
+.md th, .md td {
+  border: 1px solid var(--border);
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+  vertical-align: top;
+}
+.md th {
+  background: var(--surface-2);
+  font-weight: 600;
+  font-family: var(--font-mono-jb), monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* --- syntax tokens -------------------------------------------------------
+   Colours chosen for >=4.5:1 on #0a0e14. Deliberately not the stock
+   highlight.js palette, which is tuned for a mid-grey background. */
+.hljs-comment, .hljs-quote      { color: #6b7f99; font-style: italic; }
+.hljs-keyword, .hljs-selector-tag,
+.hljs-literal, .hljs-type        { color: #ff8a8f; }
+.hljs-string, .hljs-regexp,
+.hljs-addition                   { color: #9ad48a; }
+.hljs-number, .hljs-symbol,
+.hljs-bullet                     { color: #e5c07b; }
+.hljs-title, .hljs-name,
+.hljs-section, .hljs-selector-id { color: #7cc2ff; }
+.hljs-attr, .hljs-attribute,
+.hljs-variable, .hljs-template-variable { color: #d3b8ff; }
+.hljs-built_in, .hljs-class .hljs-title { color: #63d8d0; }
+.hljs-meta, .hljs-deletion       { color: #8a7f7f; }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong   { font-weight: 700; }
+
+/* --- streaming caret ------------------------------------------------------
+   A block caret after the last streamed character. Hidden under reduced motion
+   (handled by the global rule above), where it would otherwise be a distraction
+   rather than a progress cue. */
+.caret::after {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--accent);
+  animation: caret-blink 1s steps(2, start) infinite;
+}
+@keyframes caret-blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
+/* --- enter animation -----------------------------------------------------
+   New turns only. Exit is intentionally absent: messages are not removed
+   individually, and animating a removal would delay the next paint. */
+@keyframes turn-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+.turn-in { animation: turn-in var(--dur-enter) var(--ease) both; }
+
+@keyframes drawer-in {
+  from { transform: translateX(-100%); }
+  to   { transform: none; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+.status-pulse { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+/* Utility: hide visually but keep for screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
