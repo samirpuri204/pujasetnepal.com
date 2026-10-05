@@ -110,19 +110,38 @@ export function ChatApp() {
       abortRef.current = ctrl;
 
       let acc = "";
-      let scheduled = false;
-      // Flush paint at most once per frame. A state write per token is fine for
-      // a short reply and wasteful for a long one; this caps it at display
-      // refresh rate regardless of how fast the model emits.
+      let timer: number | null = null;
+      let settled = false;
+
+      // Throttled with setTimeout, deliberately NOT requestAnimationFrame.
+      //
+      // rAF is paused outright while a document is hidden. A reply that streams
+      // while the user is on another tab would therefore accumulate in `acc`
+      // with nothing ever flushed, and they would return to find the whole
+      // answer already complete — the stream appearing as one atomic block.
+      // A timer keeps firing when backgrounded (coarsened by the browser to
+      // roughly once a second), so the text still lands progressively. Coarser
+      // updates beat no updates.
+      const FLUSH_MS = 40;
+
       const flush = () => {
-        scheduled = false;
+        timer = null;
         updateMessage(threadId, replyId, { content: acc });
       };
+
       const push = (text: string) => {
         acc += text;
-        if (!scheduled) {
-          scheduled = true;
-          requestAnimationFrame(flush);
+        if (settled || timer !== null) return;
+        timer = window.setTimeout(flush, FLUSH_MS);
+      };
+
+      // Cancel any in-flight flush before the terminal write, so a queued timer
+      // cannot land after it and re-open a message that is already finished.
+      const settle = () => {
+        settled = true;
+        if (timer !== null) {
+          window.clearTimeout(timer);
+          timer = null;
         }
       };
 
@@ -176,6 +195,7 @@ export function ChatApp() {
           if (finished) break;
         }
 
+        settle();
         updateMessage(threadId, replyId, {
           content: acc,
           status: acc.trim() ? "complete" : "error",
@@ -184,6 +204,7 @@ export function ChatApp() {
         if (!acc.trim()) void checkHealth();
       } catch (err) {
         const aborted = ctrl.signal.aborted;
+        settle();
         updateMessage(threadId, replyId, {
           content: acc,
           status: aborted ? "stopped" : "error",
