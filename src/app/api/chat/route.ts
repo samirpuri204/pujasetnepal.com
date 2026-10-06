@@ -4,7 +4,17 @@ import type { ChatRequest, Role } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+
+// Raised from 60s. A GPU backend answers in a few seconds, but the same model
+// running CPU-only generates at single-digit tokens per second, so a 300-token
+// reply can legitimately take a minute or more. At 60s the connection would be
+// cut mid-answer and the partial reply would look like a model failure rather
+// than a hosting limit.
+//
+// The real constraint is now the opposite direction: JAYNEPAL_MAX_TOKENS must
+// stay under (maxDuration x tokens-per-second) for the backend in use, or the
+// tail of every long answer gets truncated.
+export const maxDuration = 300;
 
 /**
  * POST /api/chat — streaming proxy to the Jaynepal inference server.
