@@ -382,7 +382,7 @@ streamed reply — delta frames, then done`}
 
           <div className="mt-6 overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--border)] bg-[#0a0e14] p-5">
             <pre className="font-mono text-[12.5px] leading-[1.85] text-[var(--fg)]">
-{`curl -N https://your-endpoint/v1/chat/completions \\
+{`curl -N ${site.api.baseUrl}/chat/completions \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer $JAYNEPAL_API_KEY" \\
   -d '{
@@ -400,15 +400,16 @@ data: [DONE]`}
           </div>
 
           <p className="mt-4 max-w-[62ch] text-[13px] leading-relaxed text-[var(--faint)]">
-            Use the base URL you were given for access — see{" "}
+            That is the production base URL. Access is arranged directly rather
+            than through a signup form, so read{" "}
             <Link
               href="/docs#access"
               className="text-[var(--muted)] underline decoration-1 underline-offset-2 hover:text-[var(--accent-text)]"
             >
               access and status
-            </Link>
-            . The canonical production base URL is{" "}
-            <span className="font-mono">{site.api.baseUrl}</span>.
+            </Link>{" "}
+            before you build against it — the demo host rotates between GPU
+            sessions.
           </p>
 
           <Link

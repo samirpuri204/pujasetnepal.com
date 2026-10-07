@@ -300,10 +300,10 @@ Models       GET  ${site.api.baseUrl}/models`}</Code>
             <section>
               <H2 id="quickstart">Quickstart</H2>
               <P>
-                Nothing to install. Export the base URL and key you were given,
-                then send a request.
+                Nothing to install. Export the base URL and your key, then send
+                a request.
               </P>
-              <Code>{`export JAYNEPAL_API="https://your-endpoint/v1"
+              <Code>{`export JAYNEPAL_API="${site.api.baseUrl}"
 export JAYNEPAL_API_KEY="..."      # when access is keyed
 
 curl -N "$JAYNEPAL_API/chat/completions" \\
