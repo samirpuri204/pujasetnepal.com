@@ -1,8 +1,21 @@
 {
-  "name": "jaynepal-chat",
-  "version": "1.0.0",
+  "name": "pujasetnepal",
+  "version": "1.1.0",
   "private": true,
-  "description": "Jaynepal 1.1 — chat interface for the Jaynepal model",
+  "description": "Puja Set Nepal — open-source Nepali AI chat client and streaming proxy, with a hosted cloud behind it",
+  "homepage": "https://pujasetnepal.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samirpuri204/pujasetnepal.com.git"
+  },
+  "bugs": {
+    "url": "https://github.com/samirpuri204/pujasetnepal.com/issues"
+  },
+  "license": "MIT",
+  "author": "Samir Puri (https://samirpuri.com.np)",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowUpRight } from "lucide-react";
+import { site } from "@/lib/site";
 
 /**
  * First-run state.
@@ -35,16 +36,16 @@ export function EmptyState({ onPick }: { onPick: (prompt: string) => void }) {
   return (
     <div className="mx-auto w-full max-w-[46rem] px-4 py-10 sm:px-6 sm:py-14">
       <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--accent-text)]">
-        Jaynepal 1.1
+        {site.model.label}
       </p>
       <h1 className="mt-3 text-[1.6rem] font-semibold leading-tight tracking-[-0.02em] sm:text-[1.9rem]">
         A Nepali language model,
-        <br className="hidden sm:block" /> running on its own weights.
+        <br className="hidden sm:block" /> running on our own weights.
       </h1>
       <p className="mt-4 max-w-[52ch] text-[0.9375rem] leading-relaxed text-[var(--muted)]">
         Ask in Nepali, Romanised Nepali, or English. Every reply is generated
-        live by the model server — nothing here is scripted. Conversations are
-        stored in this browser only.
+        live by the hosted model — nothing here is scripted. Conversations are
+        stored in this browser only, never on the server.
       </p>
 
       <ul className="mt-8 grid gap-2 sm:grid-cols-2">

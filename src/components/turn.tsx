@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { AlertCircle, Check, Copy, RotateCcw } from "lucide-react";
 import { Markdown } from "./markdown";
 import { cn, formatTime } from "@/lib/utils";
+import { site } from "@/lib/site";
 import type { Message } from "@/lib/types";
 
 /**
@@ -58,7 +59,7 @@ export function Turn({
   return (
     <article
       className="group turn-in px-4 py-5 sm:px-6"
-      aria-label={isUser ? "Your message" : "Jaynepal reply"}
+      aria-label={isUser ? "Your message" : `${site.model.label} reply`}
     >
       {/* header: role + time, identical for both roles so the rhythm is stable */}
       <div className="mb-2 flex items-baseline justify-between gap-3">
@@ -68,7 +69,7 @@ export function Turn({
             isUser ? "text-[var(--faint)]" : "text-[var(--accent-text)]",
           )}
         >
-          {isUser ? "You" : "Jaynepal 1.1"}
+          {isUser ? "You" : site.model.label}
         </span>
         <span className="font-mono text-[11px] tabular-nums text-[var(--faint)]">
           {formatTime(message.createdAt)}
@@ -111,7 +112,7 @@ export function Turn({
                 <>
                   <span className="caret" aria-hidden="true" />
                   <span className="sr-only" role="status">
-                    Jaynepal is replying
+                    {site.model.label} is replying
                   </span>
                 </>
               )}

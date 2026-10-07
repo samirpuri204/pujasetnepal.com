@@ -1,7 +1,12 @@
-# Jaynepal 1.1 — design system
+# Puja Set Nepal 1.1 — design system
 
 The decisions behind the interface, and the reasoning for each one. Written down
 because a palette is easy to copy and the reasoning is not.
+
+> Renamed from `Jaynepal 1.1` to `Puja Set Nepal 1.1`; the design system itself
+> is unchanged. The wordmark swapped the Latin `J` square for a Devanagari `प`,
+> which is the same crimson squircle in the same graphic role — the accent was
+> never used as body text, so no contrast value in this document moved.
 
 ---
 
@@ -151,7 +156,7 @@ YOU ................................... 12:04
 └──────────────────────────────┘
 [copy]
 
-JAYNEPAL 1.1 .......................... 12:04
+PUJA SET NEPAL 1.1 .................... 12:04
 ▌ flush on the background, 2px crimson rail
 ▌ markdown, code, tables
 [copy] [regenerate]

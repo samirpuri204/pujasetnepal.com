@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDown, ExternalLink, Menu } from "lucide-react";
+import Link from "next/link";
+import { ArrowDown, BookOpen, ExternalLink, Menu } from "lucide-react";
+import { site } from "@/lib/site";
 import { Composer } from "./composer";
 import { EmptyState } from "./empty-state";
 import { Sidebar } from "./sidebar";
@@ -10,7 +12,6 @@ import { useThreads } from "@/lib/use-threads";
 import { cn, uid } from "@/lib/utils";
 import type { EndpointStatus, Message } from "@/lib/types";
 
-const WEBSITE = "https://samirpuri.com.np";
 /** Distance from the bottom (px) still treated as "following the reply". */
 const STICK_THRESHOLD = 120;
 
@@ -346,7 +347,7 @@ export function ChatApp() {
 
           <div className="flex min-w-0 items-center gap-2">
             <span className="truncate font-mono text-[13px] font-medium tracking-tight">
-              Jaynepal 1.1
+              {site.model.label}
             </span>
             <span className="hidden truncate font-mono text-[11px] text-[var(--faint)] sm:inline">
               {active?.title && active.title !== "New chat"
@@ -357,13 +358,21 @@ export function ChatApp() {
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
             <StatusPill status={status} />
-            <a
-              href={WEBSITE}
-              target="_blank"
-              rel="noopener noreferrer"
+            {/* Back to the product surfaces. The chat is a destination of its
+                own, so it needs a way out that is not the browser's back
+                button — a demos-only island loses people. */}
+            <Link
+              href="/docs"
               className="hidden items-center gap-1.5 text-[12.5px] text-[var(--muted)] transition-colors duration-150 hover:text-[var(--accent-text)] sm:flex"
             >
-              samirpuri.com.np
+              <BookOpen size={12} aria-hidden="true" />
+              Docs
+            </Link>
+            <a
+              href={site.url}
+              className="hidden items-center gap-1.5 text-[12.5px] text-[var(--muted)] transition-colors duration-150 hover:text-[var(--accent-text)] lg:flex"
+            >
+              {site.domain}
               <ExternalLink size={12} aria-hidden="true" />
             </a>
           </div>
@@ -425,7 +434,7 @@ export function ChatApp() {
           disabled={disabled}
           disabledReason={
             status && !status.configured
-              ? "No model endpoint is configured on the server yet."
+              ? "No model endpoint is configured on the server yet. See the documentation for how to attach one."
               : "The model server is offline — this page will reconnect automatically."
           }
         />

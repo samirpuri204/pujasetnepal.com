@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowUp, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { site } from "@/lib/site";
 
 const MAX_HEIGHT = 200;
 
@@ -80,7 +81,7 @@ export function Composer({
           )}
         >
           <label htmlFor="composer" className="sr-only">
-            Message Jaynepal 1.1
+            Message {site.model.label}
           </label>
           <textarea
             id="composer"

@@ -1,5 +1,11 @@
 import { systemPrompt } from "@/lib/system-prompt";
-import { baseUrl, completionsUrl, modelId } from "@/lib/upstream";
+import {
+  baseUrl,
+  completionsUrl,
+  maxTokens,
+  modelId,
+  temperature,
+} from "@/lib/upstream";
 import type { ChatRequest, Role } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -11,13 +17,13 @@ export const dynamic = "force-dynamic";
 // cut mid-answer and the partial reply would look like a model failure rather
 // than a hosting limit.
 //
-// The real constraint is now the opposite direction: JAYNEPAL_MAX_TOKENS must
+// The real constraint is now the opposite direction: PUJASET_MAX_TOKENS must
 // stay under (maxDuration x tokens-per-second) for the backend in use, or the
 // tail of every long answer gets truncated.
 export const maxDuration = 300;
 
 /**
- * POST /api/chat — streaming proxy to the Jaynepal inference server.
+ * POST /api/chat — streaming proxy to the model server.
  *
  * Why a proxy instead of calling the server straight from the browser:
  *
@@ -64,7 +70,7 @@ export async function POST(req: Request) {
   if (!base) {
     return fail(
       "not_configured",
-      "JAYNEPAL_API_URL is not set on the server, so there is no model to talk to yet.",
+      "No model endpoint is configured on the server (set PUJASET_API_URL, or the legacy JAYNEPAL_API_URL), so there is no model to talk to yet.",
       503,
     );
   }
@@ -113,8 +119,8 @@ export async function POST(req: Request) {
         model: modelId(),
         messages,
         stream: body.stream !== false,
-        temperature: Number(process.env.JAYNEPAL_TEMPERATURE ?? 0.7),
-        max_tokens: Number(process.env.JAYNEPAL_MAX_TOKENS ?? 1024),
+        temperature: temperature(),
+        max_tokens: maxTokens(),
       }),
       signal: ac.signal,
       cache: "no-store",

@@ -23,7 +23,8 @@ export async function GET() {
     return Response.json({
       configured: false,
       reachable: false,
-      detail: "JAYNEPAL_API_URL is not set.",
+      detail:
+        "No model endpoint is set on the server (PUJASET_API_URL, or the legacy JAYNEPAL_API_URL).",
     } satisfies EndpointStatus);
   }
 

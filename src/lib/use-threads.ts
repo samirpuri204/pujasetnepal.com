@@ -4,6 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Message, Thread } from "./types";
 import { titleFrom, uid } from "./utils";
 
+// Storage keys keep the pre-rename prefix on purpose. They are invisible to the
+// user, and changing them would silently drop the conversation history of
+// anyone who used the app before the rebrand — a real cost for zero benefit.
 const THREADS_KEY = "jaynepal.threads.v1";
 const ACTIVE_KEY = "jaynepal.active.v1";
 

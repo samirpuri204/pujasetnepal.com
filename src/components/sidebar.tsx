@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import { Plus, Trash2, X } from "lucide-react";
+import { BrandMark } from "./brand-mark";
 import { cn, relativeTime } from "@/lib/utils";
 import { useMediaQuery } from "@/lib/use-media-query";
+import { site } from "@/lib/site";
 import type { Thread } from "@/lib/types";
-
-const WEBSITE = "https://samirpuri.com.np";
 
 export function Sidebar({
   open,
@@ -79,25 +80,19 @@ export function Sidebar({
       >
         {/* ---- brand ---- */}
         <div className="flex items-center justify-between gap-2 px-4 py-4">
-          <div className="flex min-w-0 items-center gap-2.5">
-            {/* Wordmark glyph: a crimson square, the accent used in its graphic
-                role. Drawn in CSS rather than shipped as an image so it stays
-                crisp and inherits the token. */}
-            <span
-              aria-hidden="true"
-              className="grid h-6 w-6 shrink-0 place-items-center rounded-[5px] bg-[var(--accent)]"
-            >
-              <span className="font-mono text-[13px] font-bold leading-none text-white">
-                J
-              </span>
-            </span>
+          <Link
+            href="/"
+            aria-label={`${site.name} — home`}
+            className="flex min-w-0 items-center gap-2.5 rounded-md"
+          >
+            <BrandMark size={24} />
             <span className="truncate font-mono text-[15px] font-semibold tracking-tight">
-              Jaynepal
+              {site.name}
             </span>
             <span className="shrink-0 rounded border border-[var(--border-strong)] px-1.5 py-0.5 font-mono text-[10px] leading-none text-[var(--muted)]">
-              1.1
+              {site.version}
             </span>
-          </div>
+          </Link>
 
           <button
             type="button"
@@ -204,14 +199,20 @@ export function Sidebar({
           <p className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-[var(--faint)]">
             Made in Nepal
           </p>
-          <a
-            href={WEBSITE}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 inline-block text-[12.5px] text-[var(--accent-text)] underline decoration-1 underline-offset-2 transition-[text-decoration-thickness] hover:decoration-2"
-          >
-            samirpuri.com.np
-          </a>
+          <div className="mt-1 flex items-center gap-3">
+            <Link
+              href="/"
+              className="text-[12.5px] text-[var(--accent-text)] underline decoration-1 underline-offset-2 transition-[text-decoration-thickness] hover:decoration-2"
+            >
+              {site.domain}
+            </Link>
+            <Link
+              href="/docs"
+              className="text-[12.5px] text-[var(--muted)] transition-colors duration-150 hover:text-[var(--accent-text)]"
+            >
+              Docs
+            </Link>
+          </div>
         </div>
       </aside>
     </>

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Point the deployed Jaynepal chat app at a running inference server.
+# Point the deployed Puja Set Nepal chat app at a running inference server.
 #
 #   ./scripts/connect-model.sh https://your-tunnel.trycloudflare.com
 #
@@ -10,7 +10,7 @@
 # eventually be pasted wrong. One command instead.
 #
 # Options:
-#   --project <name>   Vercel project to use (default: jaynepal-chat)
+#   --project <name>   Vercel project to use (default: pujasetnepal)
 #   --skip-check       Do not probe the URL before setting it
 #   --no-deploy        Set the variable but do not redeploy
 #   --show             Print the current configuration and exit
@@ -18,7 +18,7 @@
 set -euo pipefail
 
 URL=""
-PROJECT="jaynepal-chat"
+PROJECT="pujasetnepal"
 SKIP_CHECK=0
 NO_DEPLOY=0
 SHOW=0
@@ -51,7 +51,8 @@ if [ "$SHOW" = "1" ]; then
   echo "Account     : $(vercel whoami 2>/dev/null || echo 'not signed in')"
   echo
   if [ -f .vercel/project.json ]; then
-    vercel env ls 2>/dev/null | grep -i jaynepal || echo "JAYNEPAL_API_URL is not set."
+    vercel env ls 2>/dev/null | grep -iE 'pujaset|jaynepal' ||
+      echo "PUJASET_API_URL is not set."
   else
     echo "Not linked to a Vercel project yet (no .vercel/project.json)."
   fi
@@ -80,12 +81,12 @@ HOST=$(printf '%s' "$URL" | sed -E 's#^https?://([^/]+).*#\1#')
 # otherwise meet later as a confusing chat error. Better to say it here.
 if [ "$SKIP_CHECK" = "0" ]; then
   echo "Probing https://$HOST/v1/models ..."
-  CODE=$(curl -sS --max-time 15 -o /tmp/jp_probe.$$ -w '%{http_code}' \
+  CODE=$(curl -sS --max-time 15 -o /tmp/psn_probe.$$ -w '%{http_code}' \
            "$URL/v1/models" 2>/dev/null || echo "000")
 
   if [ "$CODE" = "200" ]; then
     echo "  reachable (HTTP 200)"
-    head -c 200 /tmp/jp_probe.$$ 2>/dev/null | sed 's/^/  /' || true
+    head -c 200 /tmp/psn_probe.$$ 2>/dev/null | sed 's/^/  /' || true
     echo
   else
     echo "  warning: the server answered '$CODE' (expected 200)." >&2
@@ -97,10 +98,10 @@ if [ "$SKIP_CHECK" = "0" ]; then
     read -r reply < /dev/tty || reply="n"
     case "$reply" in
       [yY] | [yY][eE][sS]) ;;
-      *) echo "Aborted. Nothing was changed."; rm -f /tmp/jp_probe.$$; exit 1 ;;
+      *) echo "Aborted. Nothing was changed."; rm -f /tmp/psn_probe.$$; exit 1 ;;
     esac
   fi
-  rm -f /tmp/jp_probe.$$
+  rm -f /tmp/psn_probe.$$
 fi
 
 # ---- apply ----------------------------------------------------------------
@@ -111,18 +112,22 @@ if [ ! -f .vercel/project.json ]; then
   vercel link --yes --project "$PROJECT"
 fi
 
-echo "Setting JAYNEPAL_API_URL (production) ..."
+echo "Setting PUJASET_API_URL (production) ..."
 # The CLI has no "set or update", so remove first — ignoring the case where the
 # variable does not exist yet.
+vercel env rm PUJASET_API_URL production --yes >/dev/null 2>&1 || true
+printf '%s' "$URL" | vercel env add PUJASET_API_URL production >/dev/null
+
+# The legacy name would otherwise shadow the new one on an older project, since
+# the app reads both and keeps whichever value is set.
 vercel env rm JAYNEPAL_API_URL production --yes >/dev/null 2>&1 || true
-printf '%s' "$URL" | vercel env add JAYNEPAL_API_URL production >/dev/null
 
 # Read it back. Storing the wrong value (a trailing slash, a pasted prompt) is
 # the failure mode this catches, and it is invisible otherwise.
 TMP="$(mktemp)"
 if vercel env pull --environment=production "$TMP" >/dev/null 2>&1 &&
-   grep -q '^JAYNEPAL_API_URL=' "$TMP"; then
-  echo "  stored: $(grep '^JAYNEPAL_API_URL=' "$TMP")"
+   grep -q '^PUJASET_API_URL=' "$TMP"; then
+  echo "  stored: $(grep '^PUJASET_API_URL=' "$TMP")"
 else
   echo "  stored (could not read back — check the dashboard)"
 fi
@@ -140,4 +145,4 @@ vercel deploy --prod --yes 2>&1 | tail -8
 
 echo
 echo "Done. Confirm the model status with:"
-echo "  curl https://jaynepal-chat.vercel.app/api/health"
+echo "  curl https://pujasetnepal.com/api/health"

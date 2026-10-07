@@ -1,5 +1,5 @@
 /**
- * Shared types for the Jaynepal chat client.
+ * Shared types for the Puja Set Nepal chat client.
  *
  * Message.status is a first-class field rather than an implicit flag, because a
  * stopped or failed turn has to stay visibly distinct from a finished one — an
@@ -32,7 +32,7 @@ export interface Thread {
 }
 
 export interface EndpointStatus {
-  /** Is JAYNEPAL_API_URL set on the server? */
+  /** Is a model URL set on the server? (PUJASET_API_URL or JAYNEPAL_API_URL) */
   configured: boolean;
   /** Could the server actually reach it just now? */
   reachable: boolean;

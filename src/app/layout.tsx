@@ -4,6 +4,7 @@ import {
   JetBrains_Mono,
   Noto_Sans_Devanagari,
 } from "next/font/google";
+import { site } from "@/lib/site";
 import "./globals.css";
 
 /**
@@ -40,19 +41,48 @@ const devanagari = Noto_Sans_Devanagari({
 });
 
 export const metadata: Metadata = {
-  title: "Jaynepal 1.1 — Nepali AI chat",
-  description:
-    "Chat with Jaynepal 1.1, a Nepali language model made in Nepal by Samir Puri. Ask in Nepali, Romanised Nepali, or English.",
-  applicationName: "Jaynepal",
-  authors: [{ name: "Samir Puri", url: "https://samirpuri.com.np" }],
-  openGraph: {
-    title: "Jaynepal 1.1 — Nepali AI chat",
-    description:
-      "A Nepali language model made in Nepal. Ask in Nepali, Romanised Nepali, or English.",
-    url: "https://samirpuri.com.np",
-    siteName: "Jaynepal 1.1",
-    type: "website",
+  // metadataBase makes every relative OG/canonical URL absolute. Without it,
+  // Next warns and social crawlers receive paths they cannot resolve.
+  metadataBase: new URL(site.url),
+  title: {
+    default: site.title,
+    template: `%s · ${site.name}`,
   },
+  description: site.description,
+  applicationName: site.name,
+  authors: [{ name: site.creator.name, url: site.links.creator }],
+  creator: site.creator.name,
+  keywords: [
+    "Nepali AI",
+    "Nepali language model",
+    "Nepal",
+    "open source AI",
+    "Devanagari",
+    "LLM",
+    "chat interface",
+    "Next.js",
+    "developer platform",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: site.url,
+    siteName: site.name,
+    title: site.title,
+    description: site.description,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: site.title,
+    description: site.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+  category: "technology",
 };
 
 export const viewport: Viewport = {
