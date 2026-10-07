@@ -29,6 +29,44 @@ quantity.
 
 ---
 
+## Logo
+
+A crimson rounded square holding a monogram built the way Devanagari is built:
+a headstroke (*shirorekha*) with the letter body beneath it. The body is an
+angular **J** for Jaynepal.
+
+Three decisions shaped it.
+
+**The headstroke is the whole idea.** Every Devanagari letter hangs from the same
+horizontal stroke, so a single bar reads as "this is written in Devanagari" to
+anyone who knows the script — without drawing a specific letter and without
+rendering as an arbitrary glyph on a machine that lacks the font.
+
+**The stroke floats above the letter instead of joining it.** Devanagari actually
+joins them, and the first version did too. At 16px the two shapes merged into one
+silhouette that read as a T with a descender. The gap gives the J its own counter
+and keeps the letter legible at favicon size, which is the size that decides
+whether a mark works.
+
+**It is paths, not text.** The mark this replaced was the letter `प` set as text,
+which made the logo depend on Noto Sans Devanagari being loaded. Where it was not
+— a favicon, an embed, a social card — the browser substituted another face and
+the mark silently became a different glyph at a different weight. Paths cannot
+fall back.
+
+### The files
+
+| File | Purpose |
+|---|---|
+| `public/logo.svg` | The master mark, 32-unit grid. Everything else derives from it. |
+| `public/logo-mark.svg` | Glyph only, in `currentColor`, for tinting onto any surface. |
+| `public/logo-512.png`, `public/logo-32.png` | Raster exports for places that will not take an SVG. |
+| `src/app/icon.svg` | Favicon. Same construction, heavier strokes and a slightly larger glyph — the standard optical adjustment for 16px, not a second design. |
+| `src/app/apple-icon.png` | 180px touch icon, rasterised from the master. |
+| `src/components/brand-mark.tsx` | The inline component used in the header and footer, with geometry identical to the master. |
+
+---
+
 ## Colour tokens
 
 Every colour is a semantic token in `src/app/globals.css`. No component
@@ -138,9 +176,9 @@ a correctness issue, not a taste one.
 ## Components
 
 **Header.** Sticky, 95% opaque with a blur so content passing underneath stays
-legible. The brand is a crimson squircle holding the Devanagari letter `प` —
-drawn in CSS rather than shipped as an image, so it stays crisp at any density,
-inherits the accent token, and costs no request.
+legible. The brand is the logo mark above — inlined as SVG rather than shipped as
+an image, so it stays crisp at any density, inherits the accent token instead of
+hard-coding a hex, and costs no request.
 
 **Sections.** Separated by hairlines rather than alternating background shades.
 A full-bleed tinted band on every other section is the tell of a page assembled

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="512" height="512" role="img" aria-labelledby="mark-title">
+  <title id="mark-title">Puja Set Nepal mark</title>
+  <!--
+    Glyph-only variant, drawn in `currentColor` so it can be tinted to match any
+    surface — a footer, a letterhead, or a dark background that already carries
+    the accent. Geometry matches `public/logo.svg`.
+  -->
+  <rect x="9.5" y="7.4" width="14.8" height="2.4" rx="1.2" fill="currentColor" />
+  <path
+    d="M17.9 12.4 V18.2 C17.9 21 16 22.8 13.4 22.8 C11.4 22.8 9.9 21.8 9.2 20.2"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

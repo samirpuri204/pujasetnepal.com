@@ -123,19 +123,25 @@ npm run lint         # eslint
 ## Layout of the source
 
 ```
+public/
+  logo.svg                the master logo mark
+  logo-mark.svg           glyph-only, tintable via currentColor
+  logo-512.png            raster exports
+  logo-32.png
 src/
   app/
     layout.tsx            fonts, metadata, viewport
     page.tsx              landing page
     docs/page.tsx         documentation
     globals.css           design tokens
-    icon.svg              brand mark
+    icon.svg              favicon (heavier variant of the mark)
+    apple-icon.png        180px touch icon
     robots.ts             robots.txt
     sitemap.ts            sitemap.xml
   components/
     site-header.tsx       brand, navigation, source link
     site-footer.tsx       links, licence, attribution
-    brand-mark.tsx        the crimson प squircle
+    brand-mark.tsx        the inline logo mark
   lib/
     site.ts               brand, links and product facts
     utils.ts              cn()
@@ -150,6 +156,29 @@ build time, so a `"use client"` boundary would hydrate for nothing.
 Every brand string, URL, model fact and parameter in the UI comes from
 `src/lib/site.ts`. A rename or a version bump is one file, not a hunt through
 metadata, headers, footers and documentation that leaves one string behind.
+
+---
+
+## Logo
+
+A crimson rounded square holding a monogram built the way Devanagari is built —
+a headstroke (*shirorekha*) with the letter body beneath it, the body being an
+angular **J** for Jaynepal.
+
+The headstroke carries the identity: every Devanagari letter hangs from the same
+bar, so one stroke says "written in Devanagari" without drawing a specific
+letter. It floats above the J rather than joining it, because at 16px the merged
+version read as a T with a descender.
+
+It is drawn as paths, not set as text. The mark it replaced was the letter `प` in
+a font, which meant the logo depended on Noto Sans Devanagari being loaded —
+where it was not, the browser substituted another face and the mark quietly
+became a different glyph. Paths cannot fall back.
+
+Source files: [`public/logo.svg`](public/logo.svg) is the master;
+[`src/app/icon.svg`](src/app/icon.svg) is the optically heavier favicon variant;
+[`src/components/brand-mark.tsx`](src/components/brand-mark.tsx) is the inline
+component. The full reasoning is in [`DESIGN.md`](DESIGN.md#logo).
 
 ---
 

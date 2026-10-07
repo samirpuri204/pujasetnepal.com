@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="512" height="512" role="img" aria-labelledby="logo-title logo-desc">
+  <title id="logo-title">Puja Set Nepal — Jaynepal 1.1</title>
+  <desc id="logo-desc">A crimson rounded square containing a monogram: a Devanagari headstroke above a geometric J.</desc>
+  <!--
+    The mark is built the way Devanagari is built — a headstroke (*shirorekha*)
+    with the letter body beneath it — and the body is an angular J for Jaynepal.
+
+    The gap between the stroke and the letter is deliberate. Touching them, as
+    Devanagari actually joins them, produced a mark that read as a T with a
+    descender: the two shapes merged into one silhouette at 16px. Floating the
+    stroke gives the J its own counter and keeps the letter legible at every
+    size, which is the point of a mark that has to work as a favicon.
+  -->
+  <rect width="32" height="32" rx="7.2" fill="#E5484D" />
+  <rect x="9.5" y="7.4" width="14.8" height="2.4" rx="1.2" fill="#FFFFFF" />
+  <path
+    d="M17.9 12.4 V18.2 C17.9 21 16 22.8 13.4 22.8 C11.4 22.8 9.9 21.8 9.2 20.2"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

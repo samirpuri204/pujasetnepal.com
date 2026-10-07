@@ -1,13 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Puja Set Nepal">
-  <rect width="32" height="32" rx="7" fill="#E5484D" />
-  <text
-    x="16"
-    y="17"
-    text-anchor="middle"
-    dominant-baseline="central"
-    font-family="Noto Sans Devanagari, Noto Sans, system-ui, sans-serif"
-    font-size="19"
-    font-weight="500"
-    fill="#ffffff"
-  >प</text>
+  <!--
+    Favicon variant of `public/logo.svg`.
+
+    Same construction, heavier strokes and a slightly larger glyph. At 16px a
+    faithful copy of the master mark renders the headstroke at under a pixel and
+    the monogram turns to grey mush; this is the standard optical adjustment for
+    small sizes rather than a second design.
+  -->
+  <rect width="32" height="32" rx="7.2" fill="#E5484D" />
+  <rect x="8.8" y="6.9" width="15.9" height="2.9" rx="1.45" fill="#FFFFFF" />
+  <path
+    d="M18.2 12.7 V18.3 C18.2 21.2 16.2 23.1 13.5 23.1 C11.4 23.1 9.8 22 9 20.3"
+    fill="none"
+    stroke="#FFFFFF"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
 </svg>
