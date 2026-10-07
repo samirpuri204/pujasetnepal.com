@@ -9,13 +9,14 @@ import { nav, site } from "@/lib/site";
 /**
  * Header for the marketing and documentation surfaces.
  *
- * The chat has its own chrome — a sidebar, a status pill and a composer — so
- * this is not shared with `/chat`. What *is* shared is the wordmark and the
- * token vocabulary, which is what makes the two surfaces read as one product.
+ * Shared by both pages, so the landing page and the documentation read as one
+ * document rather than two templates. The active item is passed in rather than
+ * read from `usePathname`, which keeps the header a Server Component —
+ * navigation is four links and the active state is known at build time, so a
+ * `"use client"` boundary here would ship hydration for nothing.
  *
- * No client JavaScript: navigation is four links and the active state is known
- * at build time, so a `"use client"` boundary here would ship hydration for
- * nothing.
+ * The compact nav row below `sm` is a second row rather than a drawer: four
+ * links do not justify a hamburger, and a text row is reachable in one tap.
  */
 export function SiteHeader({ current }: { current?: string }) {
   return (

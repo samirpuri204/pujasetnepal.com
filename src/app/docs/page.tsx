@@ -8,7 +8,7 @@ export const metadata = {
   // The layout's title template appends the brand, so this stays a bare word.
   title: "Documentation",
   description:
-    "Architecture, configuration, the SSE API, deployment and self-hosting notes for the Puja Set Nepal chat client.",
+    "Model card, quickstart, and the full API reference for Jaynepal 1.1 — a Nepali language model served from a hosted, OpenAI-compatible endpoint.",
   alternates: { canonical: `${site.url}/docs` },
 };
 
@@ -16,15 +16,14 @@ export const metadata = {
 
 const TOC = [
   { id: "overview", label: "Overview" },
-  { id: "architecture", label: "Architecture" },
+  { id: "model", label: "Model card" },
   { id: "quickstart", label: "Quickstart" },
-  { id: "configuration", label: "Configuration" },
   { id: "api", label: "API reference" },
-  { id: "deploy", label: "Deploying" },
-  { id: "self-host", label: "Self-hosting the model" },
-  { id: "design", label: "Design notes" },
+  { id: "streaming", label: "Streaming" },
+  { id: "errors", label: "Errors" },
+  { id: "access", label: "Access and status" },
   { id: "limits", label: "Limits and roadmap" },
-  { id: "attribution", label: "Attribution and licence" },
+  { id: "credits", label: "Credits" },
 ];
 
 function H2({ id, children }: { id: string; children: React.ReactNode }) {
@@ -114,9 +113,20 @@ function Table({
   );
 }
 
-function Note({ children }: { children: React.ReactNode }) {
+function Note({
+  children,
+  tone = "warn",
+}: {
+  children: React.ReactNode;
+  tone?: "warn" | "info";
+}) {
   return (
-    <div className="mt-4 max-w-[68ch] border-l-2 border-[var(--warn)] bg-[var(--surface)] py-3 pl-4 pr-3 text-[13.5px] leading-relaxed text-[var(--muted)]">
+    <div
+      className="mt-4 max-w-[68ch] border-l-2 bg-[var(--surface)] py-3 pl-4 pr-3 text-[13.5px] leading-relaxed text-[var(--muted)]"
+      style={{
+        borderColor: tone === "warn" ? "var(--warn)" : "var(--accent)",
+      }}
+    >
       {children}
     </div>
   );
@@ -178,13 +188,13 @@ export default function Page() {
             Documentation
           </p>
           <h1 className="mt-3 text-[1.9rem] font-semibold leading-tight tracking-[-0.03em] sm:text-[2.3rem]">
-            Everything needed to run, rebrand or replace this.
+            Everything needed to call {site.model.name}.
           </h1>
           <P>
-            {site.name} is the chat client, the hosted endpoint in front of it,
-            and the documentation you are reading. This page covers how the
-            pieces fit, how to configure them, and — importantly — what is
-            genuinely finished and what is not.
+            {site.model.name} is a Nepali-first language model made in Nepal and
+            served by {site.name} from a hosted, OpenAI-compatible endpoint. This
+            page covers what the model is, how to send it a request, and what it
+            is genuinely not good at yet.
           </P>
 
           <div className="mt-10 flex flex-col gap-10">
@@ -192,443 +202,372 @@ export default function Page() {
             <section>
               <H2 id="overview">Overview</H2>
               <P>
-                This repository is <strong className="text-[var(--fg)]">the
-                client</strong>: a Next.js application that renders a chat
-                interface and proxies it to a model server. The model weights do
-                not run on Vercel — a 9B-parameter model cannot run in a
-                serverless function, and the bundle limits are orders of
-                magnitude too small. The client is deployed to Vercel; the
-                weights live on a GPU box and Vercel proxies to them.
+                You reach {site.model.name} over plain HTTP. There is no SDK to
+                install, no weights to download and no GPU to rent: send a{" "}
+                <Mono>POST</Mono> to the completions endpoint with your messages,
+                and the answer comes back — streamed by default.
               </P>
               <P>
-                So a working chat needs two things: this deployment, and a
-                running model server. The interface is written to be honest about
-                which of the two is missing — the status pill in the header
-                reports what it measured, and a send with no model attached
-                returns a clear message rather than a spinner that never ends.
+                The interface is the OpenAI chat-completions shape, so an
+                existing client library or agent framework works by changing two
+                values: the base URL, and the model id.
               </P>
+              <Code>{`Base URL     ${site.api.baseUrl}
+Model id     ${site.model.id}
+Endpoint     POST ${site.api.baseUrl}/chat/completions
+Models       GET  ${site.api.baseUrl}/models`}</Code>
 
-              <H3>Routes</H3>
-              <Table
-                head={["Route", "Kind", "What it does"]}
-                rows={[
-                  [
-                    <Mono key="r">/</Mono>,
-                    "Static",
-                    "Marketing page: positioning, architecture, capabilities, status.",
-                  ],
-                  [
-                    <Mono key="r">/docs</Mono>,
-                    "Static",
-                    "This page. Documentation, API reference, attribution.",
-                  ],
-                  [
-                    <Mono key="r">/chat</Mono>,
-                    "Client",
-                    "The chat application. Streaming UI, thread store, composer.",
-                  ],
-                  [
-                    <Mono key="r">/api/chat</Mono>,
-                    "Server",
-                    "POST. Streaming proxy to the upstream model server.",
-                  ],
-                  [
-                    <Mono key="r">/api/health</Mono>,
-                    "Server",
-                    "GET. Is an upstream reachable right now, and what id is it serving?",
-                  ],
-                  [
-                    <Mono key="r">/robots.txt</Mono>,
-                    "Static",
-                    "Generated from `src/app/robots.ts`.",
-                  ],
-                  [
-                    <Mono key="r">/sitemap.xml</Mono>,
-                    "Static",
-                    "Generated from `src/app/sitemap.ts`.",
-                  ],
-                ]}
-              />
+              <H3>How a request is served</H3>
+              <Code>{`your app  ──►  hosted API  ──►  ${site.model.name}  ──►  streamed reply
+                (${site.domain})   (${site.model.parameters})`}</Code>
+              <P>
+                The API is the boundary you integrate against. Which host the
+                model runs on, how it is batched and how it is scaled are ours to
+                change without asking you to redeploy, as long as the contract
+                below holds.
+              </P>
             </section>
 
-            {/* --------------------------------------------- architecture */}
+            {/* ---------------------------------------------- model card */}
             <section>
-              <H2 id="architecture">Architecture</H2>
-              <P>
-                One indirection sits between the browser and the model: this
-                app&apos;s own server route. The browser calls{" "}
-                <Mono>/api/chat</Mono>, never the model server directly.
-              </P>
-              <Code>{`browser  ──►  ${site.domain} (Vercel)  ──►  /api/chat  ──►  model server
-              client + proxy                      (GPU box, OpenAI-compatible)`}</Code>
-
-              <H3>Why the proxy exists</H3>
+              <H2 id="model">Model card</H2>
               <Table
-                head={["Reason", "What it buys"]}
+                head={["Field", "Value"]}
                 rows={[
+                  ["Model", site.model.name],
+                  ["Model id", <Mono key="i">{site.model.id}</Mono>],
+                  ["Version", site.model.version],
+                  ["Parameters", site.model.parameters],
+                  ["Languages", site.model.languages.join(" · ")],
+                  ["Context window", site.model.context],
+                  ["Serving interface", "OpenAI-compatible HTTP API, SSE streaming"],
                   [
-                    "The upstream URL stays server-side",
-                    "Changing the GPU box is an environment variable, not a redeploy of the client. The raw endpoint never reaches devtools.",
-                  ],
-                  [
-                    "No CORS dependency",
-                    "The upstream does not have to send permissive headers for the UI to work.",
-                  ],
-                  [
-                    "One place for policy",
-                    "Auth, quota and rate limiting attach to a single route instead of every fetch call.",
-                  ],
-                  [
-                    "Byte-level buffering",
-                    "Multi-byte decoding happens once, server-side, which is what keeps Devanagari readable across chunk boundaries.",
+                    "Trained by",
+                    `${site.creator.name} — ${site.creator.place}`,
                   ],
                 ]}
               />
 
-              <H3>The content of the wire</H3>
+              <H3>What it is built for</H3>
               <P>
-                In both directions the protocol is three events —{" "}
-                <Mono>delta</Mono>, <Mono>done</Mono>, <Mono>error</Mono> — not
-                raw OpenAI chunks. Re-emitting the vendor shape would push{" "}
-                <Mono>choices[0].delta.content</Mono> into the React component;
-                keeping the client ignorant of it means the upstream can be
-                swapped for any compatible server without touching the UI.
+                Nepali conversation and Nepali prose. It replies in the language
+                you wrote in — Devanagari, Romanised Nepali or English — and
+                holds that choice instead of drifting back to English. It handles
+                the ordinary work a Nepali-speaking user needs from an assistant:
+                explaining concepts, drafting text, translating between the three
+                registers, and writing code with English technical terms around
+                Nepali explanation.
+              </P>
+              <P>
+                It also writes Markdown, because structure is what makes a long
+                answer readable — headings, lists, tables and fenced code blocks
+                come back as Markdown rather than as plain paragraphs.
               </P>
 
-              <H3>Where state lives</H3>
+              <H3>What it is not</H3>
               <P>
-                Conversations are in <Mono>localStorage</Mono>, keyed per
-                browser. There is no account, no cookie and no server-side
-                history — not as a privacy promise layered on top, but because
-                there is no database to write to. The trade-off is real: history
-                does not follow a user across devices. Syncing it is the natural
-                place to add a backend, and it is listed in the roadmap rather
-                than implied to already work.
+                Stated plainly, because these are the questions a reader will
+                actually hit:
               </P>
+              <Table
+                head={["Limitation", "What that means in practice"]}
+                rows={[
+                  [
+                    "It is small",
+                    `${site.model.parameters} parameters, not a frontier model. It is strong for its size in Nepali and weaker than a very large model on hard reasoning, long maths and obscure world knowledge.`,
+                  ],
+                  [
+                    "Academic Nepali is uneven",
+                    "Formal legal, medical and academic registers are less reliable than everyday conversation. For anything published, have a native speaker review the output.",
+                  ],
+                  [
+                    "It is not a knowledge base",
+                    "It can state things confidently and wrongly. Treat factual claims — especially dates, numbers and current events — as drafts to verify.",
+                  ],
+                  [
+                    "No tool use",
+                    "It does not browse, call functions or run code. It answers from the prompt and what it learned while training.",
+                  ],
+                  [
+                    "Devanagari is not transliterated for you",
+                    "Ask for Romanised Nepali or Devanagari explicitly if the client or channel needs one of them.",
+                  ],
+                ]}
+              />
             </section>
 
             {/* ---------------------------------------------- quickstart */}
             <section>
               <H2 id="quickstart">Quickstart</H2>
               <P>
-                Node 20 or newer (developed on 22+). No account, no API key, no
-                cloud project needed to see the interface.
+                Nothing to install. Export the base URL and key you were given,
+                then send a request.
               </P>
-              <Code>{`git clone ${site.links.github}.git
-cd pujasetnepal.com
-npm install
+              <Code>{`export JAYNEPAL_API="https://your-endpoint/v1"
+export JAYNEPAL_API_KEY="..."      # when access is keyed
 
-cp .env.example .env.local     # optional at this stage
-npm run dev                    # http://localhost:3000`}</Code>
-              <P>
-                With an empty <Mono>PUJASET_API_URL</Mono> the app runs fully:
-                you can open <Mono>/</Mono>, <Mono>/docs</Mono> and{" "}
-                <Mono>/chat</Mono>, and the header reads{" "}
-                <Mono>Not configured</Mono>. Sending a message returns a clear
-                explanation instead of hanging.
-              </P>
+curl -N "$JAYNEPAL_API/chat/completions" \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer $JAYNEPAL_API_KEY" \\
+  -d '{
+        "model": "${site.model.id}",
+        "messages": [
+          { "role": "user", "content": "लमजुङ किन प्रसिद्ध छ?" }
+        ],
+        "stream": true
+      }'`}</Code>
 
-              <H3>Production build</H3>
-              <Code>{`npm run build      # compile + typecheck + lint
-npm run start      # serve the production build locally
-npm run lint       # eslint only`}</Code>
-            </section>
+              <H3>Confirm the model is there</H3>
+              <Code>{`curl "$JAYNEPAL_API/models"
 
-            {/* ------------------------------------------ configuration */}
-            <section>
-              <H2 id="configuration">Configuration</H2>
-              <P>
-                Every variable is read server-side only. None is prefixed{" "}
-                <Mono>NEXT_PUBLIC_</Mono>, so no endpoint or setting can leak
-                into the browser bundle.
-              </P>
-              <Table
-                head={["Variable", "Default", "Purpose"]}
-                rows={[
-                  [
-                    <span key="v" className="font-mono text-[12.5px] text-[var(--fg)]">
-                      PUJASET_API_URL
-                    </span>,
-                    "—",
-                    "Base URL of the inference server. Accepted as https://host, https://host/v1, or the full /v1/chat/completions path — all are normalised. Empty means the UI runs with no model attached.",
-                  ],
-                  [
-                    <span key="v" className="font-mono text-[12.5px] text-[var(--fg)]">
-                      PUJASET_MODEL
-                    </span>,
-                    <Mono key="d">jaynepal-1.1</Mono>,
-                    "Model id sent in the request body. Only matters if the server serves more than one.",
-                  ],
-                  [
-                    <span key="v" className="font-mono text-[12.5px] text-[var(--fg)]">
-                      PUJASET_TEMPERATURE
-                    </span>,
-                    "0.7",
-                    "Sampling temperature. Non-numeric values fall back to the default.",
-                  ],
-                  [
-                    <span key="v" className="font-mono text-[12.5px] text-[var(--fg)]">
-                      PUJASET_MAX_TOKENS
-                    </span>,
-                    "1024",
-                    "Response ceiling. Must stay under (maxDuration × tokens-per-second) for the backend, or long answers are truncated.",
-                  ],
-                  [
-                    <span key="v" className="font-mono text-[12.5px] text-[var(--fg)]">
-                      PUJASET_SYSTEM_PROMPT
-                    </span>,
-                    "built-in persona",
-                    "Overrides the system turn. Set to an empty string to send none at all — useful if the backend already prepends its own and you do not want two.",
-                  ],
-                ]}
-              />
+{ "object": "list",
+  "data": [ { "id": "${site.model.id}", "object": "model" } ] }`}</Code>
 
-              <H3>Legacy names</H3>
-              <P>
-                The same settings also respond to the older{" "}
-                <Mono>JAYNEPAL_*</Mono> names, because the upstream serves the{" "}
-                <Mono>jaynepal-1.1</Mono> adapter and existing deployments
-                should not break on a rename. The rule is simple: a{" "}
-                <strong className="text-[var(--fg)]">non-empty</strong>{" "}
-                <Mono>PUJASET_*</Mono> value wins; otherwise the{" "}
-                <Mono>JAYNEPAL_*</Mono> value is used. Remove the old keys once
-                you have migrated — two names for one setting is a migration
-                state, not a design.
-              </P>
-              <Note>
-                The system prompt behaves slightly differently: an{" "}
-                <em>empty string</em> is a meaningful value there (send no system
-                turn), so it is honoured rather than treated as unset.
+              <H3>From Python, with an OpenAI client</H3>
+              <Code>{`from openai import OpenAI
+
+client = OpenAI(base_url=os.environ["JAYNEPAL_API_URL"],
+                api_key=os.environ["JAYNEPAL_API_KEY"])
+
+stream = client.chat.completions.create(
+    model="${site.model.id}",
+    messages=[{"role": "user", "content": "नमस्ते, तपाईं कस्तो छ?"}],
+    stream=True,
+)
+
+for chunk in stream:
+    print(chunk.choices[0].delta.content or "", end="", flush=True)`}</Code>
+              <Note tone="info">
+                Any OpenAI-compatible client works — the base URL and the model
+                id are the only two things that change.
               </Note>
             </section>
 
-            {/* ----------------------------------------------- API ref */}
+            {/* ----------------------------------------------------- API */}
             <section>
               <H2 id="api">API reference</H2>
 
-              <H3>POST /api/chat</H3>
-              <P>Streams a completion from the upstream model server.</P>
-              <Code>{`POST /api/chat
+              <H3>POST /chat/completions</H3>
+              <Code>{`POST ${site.api.baseUrl}/chat/completions
 Content-Type: application/json
+Authorization: Bearer <key>        # when access is keyed
 
 {
+  "model": "${site.model.id}",
   "messages": [
-    { "role": "user", "content": "नमस्ते" }
+    { "role": "system",    "content": "optional persona" },
+    { "role": "user",      "content": "नमस्ते" }
   ],
+  "temperature": ${site.model.defaults.temperature},
+  "max_tokens": ${site.model.defaults.maxTokens},
   "stream": true
 }`}</Code>
-              <P>
-                Valid roles are <Mono>user</Mono>, <Mono>assistant</Mono> and{" "}
-                <Mono>system</Mono>. Content is truncated at 32,000 characters
-                per message. The system prompt from configuration is prepended
-                automatically, so you should not send one yourself.
-              </P>
 
-              <H3>Response — server-sent events</H3>
-              <Code>{`data: {"type":"delta","text":"नम"}
-
-data: {"type":"delta","text":"स्ते"}
-
-data: {"type":"done"}`}</Code>
+              <H3>Request body</H3>
               <Table
-                head={["Event", "Meaning"]}
+                head={["Field", "Type", "Default", "Notes"]}
                 rows={[
-                  [<Mono key="e">delta</Mono>, "A fragment of the reply. Concatenate in order; do not assume a fragment is a whole word or character."],
-                  [<Mono key="e">done</Mono>, "The turn finished. May carry { reason: \"client_abort\" } when the caller disconnected."],
-                  [<Mono key="e">error</Mono>, "The stream failed. Carries a human-readable message."],
+                  [
+                    <Mono key="f">model</Mono>,
+                    "string",
+                    <Mono key="d">{site.model.id}</Mono>,
+                    "Required. The only id currently served.",
+                  ],
+                  [
+                    <Mono key="f">messages</Mono>,
+                    "array",
+                    "—",
+                    "Required. Roles are user, assistant and system. Send the whole conversation each time; the model holds no state between requests.",
+                  ],
+                  [
+                    <Mono key="f">temperature</Mono>,
+                    "number",
+                    site.model.defaults.temperature,
+                    "0 is nearly deterministic, 1 is loose. Lower it for factual or technical answers, raise it for drafting.",
+                  ],
+                  [
+                    <Mono key="f">max_tokens</Mono>,
+                    "integer",
+                    site.model.defaults.maxTokens,
+                    "Ceiling on the reply. Generous values cost latency you do not get back if the model finishes early.",
+                  ],
+                  [
+                    <Mono key="f">stream</Mono>,
+                    "boolean",
+                    "true",
+                    "Server-sent events instead of one JSON body. See Streaming below.",
+                  ],
                 ]}
               />
 
-              <H3>Error responses</H3>
+              <H3>Response — non-streaming</H3>
+              <Code>{`{
+  "id": "chatcmpl-...",
+  "object": "chat.completion",
+  "model": "${site.model.id}",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "stop",
+      "message": { "role": "assistant", "content": "..." }
+    }
+  ],
+  "usage": { "prompt_tokens": 18, "completion_tokens": 96, "total_tokens": 114 }
+}`}</Code>
+
+              <H3>GET /models</H3>
+              <P>
+                Lists what the endpoint is serving. Useful as a cheap liveness
+                check, and as the first thing to try when a request fails.
+              </P>
+              <Code>{`GET ${site.api.baseUrl}/models
+
+{ "object": "list", "data": [ { "id": "${site.model.id}", "object": "model" } ] }`}</Code>
+            </section>
+
+            {/* ------------------------------------------------ streaming */}
+            <section>
+              <H2 id="streaming">Streaming</H2>
+              <P>
+                With <Mono>stream: true</Mono> — the default — the response is a
+                sequence of server-sent events, each carrying one fragment of the
+                reply, terminated by a literal{" "}
+                <Mono>[DONE]</Mono> line.
+              </P>
+              <Code>{`data: {"choices":[{"delta":{"content":"लमजुङ"}}]}
+data: {"choices":[{"delta":{"content":" जिल्ला"}}]}
+data: {"choices":[{"delta":{"content":" हो"}}]}
+data: [DONE]`}</Code>
+
+              <H3>Consuming it without breaking Nepali</H3>
+              <P>
+                Read the response as a <em>byte</em> stream and decode with
+                buffering enabled, splitting lines only on complete newlines. A
+                Devanagari character is several bytes, and a token can land in
+                the middle of one; decoding each chunk independently turns that
+                into mojibake in exactly the language this model exists to serve.
+              </P>
+              <Code>{`reader = response.iter_lines(decode_unicode=False)
+buffer = b""
+
+for chunk in reader:
+    buffer += chunk + b"\\n"
+    lines = buffer.split(b"\\n")
+    buffer = lines.pop()          # keep the partial line for next time
+    for line in lines:
+        if not line.startswith(b"data: "):
+            continue
+        payload = line[6:]
+        if payload == b"[DONE]":
+            break
+        text = json.loads(payload)["choices"][0]["delta"].get("content", "")
+        print(text, end="", flush=True)`}</Code>
+              <Note tone="info">
+                Fragment boundaries are not word boundaries. Accumulate deltas
+                and re-render; never assume one chunk is one word or one
+                character.
+              </Note>
+            </section>
+
+            {/* --------------------------------------------------- errors */}
+            <section>
+              <H2 id="errors">Errors</H2>
+              <P>
+                Failures are JSON, not an empty stream — so a client can tell
+                &ldquo;the model said nothing&rdquo; apart from &ldquo;the model
+                could not be reached&rdquo;.
+              </P>
+              <Code>{`{
+  "error": {
+    "message": "human-readable description",
+    "type": "invalid_request_error",
+    "code": "bad_request"
+  }
+}`}</Code>
               <Table
                 head={["Status", "Code", "Cause"]}
                 rows={[
-                  ["400", <Mono key="c">bad_request</Mono>, "Body was not JSON, or `messages` was empty or had no valid role/content pair."],
-                  ["502", <Mono key="c">upstream_unreachable</Mono>, "The model server could not be reached at all."],
-                  ["502", <Mono key="c">upstream_timeout</Mono>, "No response within 30s — usually the backend still loading weights."],
-                  ["502", <Mono key="c">upstream_error</Mono>, "The model server answered with a non-2xx status."],
-                  ["503", <Mono key="c">not_configured</Mono>, "No endpoint is configured on the server. Set PUJASET_API_URL."],
+                  ["400", <Mono key="c">bad_request</Mono>, "Body was not JSON, messages was empty, or a message had no valid role and string content."],
+                  ["401", <Mono key="c">invalid_api_key</Mono>, "Missing or wrong key, when the endpoint is keyed."],
+                  ["404", <Mono key="c">model_not_found</Mono>, "The model field does not name the served model."],
+                  ["429", <Mono key="c">rate_limited</Mono>, "Too many requests in flight. Back off and retry."],
+                  ["502", <Mono key="c">upstream_unreachable</Mono>, "The model host could not be reached — usually the serving session not running."],
+                  ["503", <Mono key="c">unavailable</Mono>, "The model is loading. Retry shortly."],
+                  ["504", <Mono key="c">timeout</Mono>, "No response within the gateway window. Long answers on a CPU-only host can hit this."],
                 ]}
               />
-              <P>
-                Errors are JSON:{" "}
-                <Mono>{`{ error: { code, message, detail? } }`}</Mono>.
-              </P>
-
-              <H3>GET /api/health</H3>
-              <P>
-                Reports whether an upstream is configured and reachable right
-                now, with a 5-second ceiling — a health check that hangs is worse
-                than one that reports unreachable.
-              </P>
-              <Code>{`{
-  "configured": true,
-  "reachable": true,
-  "model": "jaynepal-1.1",
-  "detail": "gpu-box.example.com · 312ms"
-}`}</Code>
               <Note>
-                <Mono>detail</Mono> contains the upstream host only, never the
-                full URL, so a tunnel URL with credentials in a query string
-                cannot leak through an error surface.
+                Retry <Mono>429</Mono> and <Mono>503</Mono> with exponential
+                backoff. Do not retry <Mono>400</Mono> — the request itself is
+                wrong and will fail again.
               </Note>
             </section>
 
-            {/* ------------------------------------------------ deploying */}
+            {/* --------------------------------------------------- access */}
             <section>
-              <H2 id="deploy">Deploying</H2>
+              <H2 id="access">Access and status</H2>
               <P>
-                The client is a standard Next.js app and deploys to Vercel with
-                no build configuration. Route handlers run on the Node.js
-                runtime, and the chat route declares{" "}
-                <Mono>maxDuration = 300</Mono> — raised from the default because
-                a CPU-only backend can legitimately take a minute or more for a
-                long answer, and a 60-second cap cuts the reply mid-sentence.
-              </P>
-              <Code>{`# once
-vercel link
-
-# set the endpoint before the first deploy that should serve real replies
-vercel env add PUJASET_API_URL production
-
-# ship it
-vercel deploy --prod`}</Code>
-
-              <H3>Custom domain</H3>
-              <P>
-                Add <Mono>{site.domain}</Mono> to the Vercel project, then point
-                DNS at Vercel: an <Mono>A</Mono> record to{" "}
-                <Mono>76.76.21.21</Mono> for the apex, or a{" "}
-                <Mono>CNAME</Mono> to <Mono>cname.vercel-dns.com</Mono> for{" "}
-                <Mono>www</Mono>. TLS is provisioned automatically once the
-                records resolve.
+                The canonical production base URL is{" "}
+                <Mono>{site.api.baseUrl}</Mono>. Access is arranged directly at
+                the moment rather than granted by a signup form, and the
+                endpoint you are given is the one to use in{" "}
+                <Mono>base_url</Mono>.
               </P>
               <Note>
-                Deploying the client does not start a model. Until{" "}
-                <Mono>PUJASET_API_URL</Mono> points at a live server, the
-                deployment serves the interface and reports{" "}
-                <Mono>Not configured</Mono> — which is the correct behaviour, not
-                a broken build.
+                <strong className="text-[var(--fg)]">
+                  The hosted endpoint is not yet publicly attached.
+                </strong>{" "}
+                Today the model runs behind a session-bound GPU host, which means
+                its address changes when the session restarts. That is fine for
+                evaluation and integration work, and not yet fine for a product
+                that promises five nines. A permanently hosted endpoint is the
+                first item on the roadmap below.
               </Note>
-            </section>
 
-            {/* ---------------------------------------------- self-host */}
-            <section>
-              <H2 id="self-host">Self-hosting the model</H2>
+              <H3>Bringing up an endpoint yourself</H3>
               <P>
-                The upstream is any server that speaks OpenAI chat completions.
-                Three practical routes, in increasing order of reliability:
+                The interface is standard, so any server that speaks OpenAI chat
+                completions can front the model while the hosted one is being
+                brought up — a rented GPU box with vLLM, llama.cpp, or a GPU
+                Space. Point your client at it and the code below does not
+                change.
               </P>
-              <Table
-                head={["Route", "Good for", "Catch"]}
-                rows={[
-                  ["Free GPU notebook (T4)", "Demos, development, this project's own demo", "Sessions are time-capped and the public tunnel URL changes on every restart."],
-                  ["Rented GPU box (vLLM, llama.cpp, Ollama)", "A stable endpoint you can point a domain at", "Costs money continuously, including while idle."],
-                  ["Hugging Face Space with a GPU", "A URL that survives restarts", "Cold starts, and the same GPU-memory constraints as any shared host."],
-                ]}
-              />
+              <Code>{`# 1. serve it
+vllm serve <jaynepal-1.1> --port 8000 --max-model-len 8192
 
-              <H3>Steps</H3>
-              <Code>{`# 1. serve the model, exposing /v1/models and /v1/chat/completions
-#    (vLLM example, with the adapter merged or loaded as a LoRA)
-vllm serve <base-or-merged-model> --port 8000 --max-model-len 8192
-
-# 2. verify it answers
+# 2. confirm the contract
 curl http://localhost:8000/v1/models
 
-# 3. point the client at it
-echo "PUJASET_API_URL=http://localhost:8000/v1" >> .env.local
-npm run dev
-
-# 4. confirm through the app's own health route
-curl http://localhost:3000/api/health`}</Code>
-
-              <H3>Loading the adapter</H3>
-              <P>
-                The adapter is published at{" "}
-                <ExternalLink href={site.links.weights}>
-                  {site.links.weights.replace("https://", "")}
-                </ExternalLink>{" "}
-                as a LoRA on top of <Mono>{site.model.base}</Mono>. Either merge
-                it into the base weights for serving, or load it as a LoRA
-                adapter if your server supports that. Keep the base model&apos;s
-                own licence file with any redistributed merge.
-              </P>
-              <Note>
-                The tunnel URL changes whenever the notebook restarts — Kaggle
-                sessions cap at 12 hours. When it changes, update{" "}
-                <Mono>PUJASET_API_URL</Mono> and redeploy. For an endpoint that
-                survives restarts you need a host that keeps the process alive.
-              </Note>
+# 3. use it — the only change your client needs
+export JAYNEPAL_API=http://localhost:8000/v1`}</Code>
             </section>
 
-            {/* ---------------------------------------------------- design */}
-            <section>
-              <H2 id="design">Design notes</H2>
-              <P>
-                The interface is dark, technical and editorial, and the reasoning
-                behind it is written down rather than left implicit. The short
-                version:
-              </P>
-              <Table
-                head={["Decision", "Reasoning"]}
-                rows={[
-                  [
-                    "Crimson accent (#E5484D), not purple",
-                    "The generator default for anything labelled \"AI chat\" is #7C3AED — the clearest tell of a generated interface. The accent here is taken from the Nepali flag and used in a graphic role only, so it is honest to the brand instead of decorative.",
-                  ],
-                  [
-                    "Two accent tokens",
-                    "#E5484D measures 3.9:1 against the page background — fine for a rail, ring or mark (needs 3:1), not for body text (needs 4.5:1). #FF6369 is the readable variant at 6.6:1. One token would have forced a choice between a dull accent and unreadable links.",
-                  ],
-                  [
-                    "Flat transcript, no bubbles",
-                    "Avatar-and-bubble spends horizontal width on a wide screen and is the default shape of every generated chat app. A raised surface for the user and a crimson rail for the assistant carries the same meaning without the cost.",
-                  ],
-                  [
-                    "Noto Sans Devanagari in the stack",
-                    "IBM Plex Sans ships no Devanagari glyphs. Without a declared face the browser substitutes whatever the OS has, so the same Nepali sentence renders at different sizes per platform — a correctness bug for a Nepali-first model.",
-                  ],
-                  [
-                    "IBM Plex Sans + JetBrains Mono",
-                    "A tool with status, counters and identifiers on screen benefits from a mono voice for labels and metadata. Inter is the default for everything and Poppins/Open Sans read as generic SaaS.",
-                  ],
-                ]}
-              />
-              <P>
-                Accessibility was measured, not assumed: contrast ratios are
-                tabulated in the repository&apos;s design notes, status is never
-                carried by colour alone, the closed mobile drawer is set{" "}
-                <Mono>inert</Mono> so it cannot create invisible tab stops, and
-                the 16px composer prevents iOS Safari from zooming on focus.
-              </P>
-            </section>
-
-            {/* ---------------------------------------------------- limits */}
+            {/* --------------------------------------------------- limits */}
             <section>
               <H2 id="limits">Limits and roadmap</H2>
               <P>
-                Stated plainly, because a reader deciding whether to build on
-                this needs the gaps as much as the features.
+                The gaps, stated as gaps. A reader deciding whether to build on
+                a model needs these more than it needs a feature list.
               </P>
               <Table
                 head={["Today", "Consequence"]}
                 rows={[
-                  ["No authentication", "Anyone with the URL can use the model endpoint, at the endpoint's expense."],
-                  ["No server-side rate limiting", "A single caller can saturate the GPU."],
-                  ["History is per-browser", "Conversations do not follow a user across devices."],
-                  ["The demo endpoint is session-bound", "The hosted model is offline whenever the GPU session ends."],
-                  ["300-second function ceiling", "Very long answers from a slow CPU-only backend can still be cut off."],
+                  ["No self-serve keys", "Access is arranged directly, so onboarding is not instant."],
+                  ["The evaluation endpoint is session-bound", "It is offline between GPU sessions, and its address moves."],
+                  ["No published benchmark", "Quality claims are qualitative until the evaluation below ships."],
+                  [`${site.model.context} context`, "Very long documents must be chunked or summarised rather than pasted whole."],
+                  ["No tool calling", "It cannot browse, run code or call your functions."],
                 ]}
               />
+
               <H3>Roadmap</H3>
               <ul className="mt-4 flex flex-col gap-2.5">
                 {[
-                  "Authentication and per-user quotas on /api/chat.",
-                  "A stable hosted endpoint on a persistent GPU host, replacing the notebook tunnel.",
-                  "Optional synced history, behind the auth work.",
-                  "A published evaluation of Nepali answer quality against the base model.",
-                  "A Docker/compose file for one-command self-hosting of a compatible backend.",
+                  "A permanently hosted endpoint on a persistent GPU host.",
+                  "Self-serve API keys with per-key quotas and usage reporting.",
+                  "A published Nepali evaluation — comprehension, generation and Romanised transcription — against comparable models.",
+                  "A quantised release for people who want to run it on their own hardware.",
+                  "Deeper register coverage for formal, legal and academic Nepali.",
                 ].map((item) => (
                   <li
                     key={item}
@@ -644,76 +583,31 @@ curl http://localhost:3000/api/health`}</Code>
               </ul>
             </section>
 
-            {/* ----------------------------------------------- attribution */}
+            {/* -------------------------------------------------- credits */}
             <section className="pb-6">
-              <H2 id="attribution">Attribution and licence</H2>
+              <H2 id="credits">Credits</H2>
               <P>
-                Worth being precise about, because the ownership claim only holds
-                if the provenance is accurate.
-              </P>
-              <Table
-                head={["Component", "Status", "Licence"]}
-                rows={[
-                  [
-                    "This client (UI, streaming proxy, design system)",
-                    "This project's work",
-                    <Mono key="l">{site.license}</Mono>,
-                  ],
-                  [
-                    <span key="a">
-                      {site.model.label} — the fine-tune, identity tuning, router
-                      and serving stack
-                    </span>,
-                    "This project's work",
-                    "See the adapter card",
-                  ],
-                  [
-                    <span key="a">
-                      <Mono>{site.model.base}</Mono> base weights
-                    </span>,
-                    "Not this project's work",
-                    "Apache-2.0",
-                  ],
-                  [
-                    <span key="a">
-                      <Mono>react-markdown</Mono>, <Mono>remark-gfm</Mono>,{" "}
-                      <Mono>rehype-highlight</Mono>, <Mono>lucide-react</Mono>,
-                      Next.js, Tailwind
-                    </span>,
-                    "Third-party dependencies",
-                    "Their own licences",
-                  ],
-                ]}
-              />
-              <P>
-                In short: the fine-tune and the product are this project&apos;s
-                work; the base weights are not. The chat persona presents the
-                served model as {site.model.label}, which it is — a LoRA
-                fine-tune carrying this project&apos;s identity and behaviour
-                tuning on top of an openly licensed base.
-              </P>
-
-              <H3>Credits</H3>
-              <P>
-                Built by{" "}
+                {site.model.name} and this platform are built by{" "}
                 <ExternalLink href={site.links.creator}>
                   {site.creator.name}
                 </ExternalLink>{" "}
-                ({site.creator.handle}) in {site.creator.place}. Source on{" "}
-                <ExternalLink href={site.links.github}>GitHub</ExternalLink>;
-                issues and pull requests are welcome. The adapter is on{" "}
-                <ExternalLink href={site.links.weights}>
-                  Hugging Face
-                </ExternalLink>
-                .
+                ({site.creator.handle}) in {site.creator.place}.
+              </P>
+              <P>
+                The model is published on{" "}
+                <ExternalLink href={site.links.weights}>Hugging Face</ExternalLink>
+                . The source for this website is on{" "}
+                <ExternalLink href={site.links.github}>GitHub</ExternalLink>{" "}
+                under the {site.license} licence, and issues and pull requests
+                are welcome.
               </P>
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  href="/chat"
+                  href="/"
                   className="inline-flex items-center gap-2 rounded-[var(--radius)] bg-[var(--btn-primary-bg)] px-4 py-2.5 text-sm font-medium text-[var(--btn-primary-fg)] transition-opacity duration-150 hover:opacity-90"
                 >
-                  Open the chat
+                  Back to the overview
                 </Link>
                 <a
                   href={site.links.github}

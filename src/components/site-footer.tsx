@@ -3,17 +3,17 @@ import { BrandMark } from "./brand-mark";
 import { nav, site } from "@/lib/site";
 
 const EXTERNAL = [
-  { href: site.links.github, label: "GitHub" },
+  { href: site.links.github, label: "This website's source" },
   { href: site.links.issues, label: "Issues" },
-  { href: site.links.weights, label: "Model weights" },
-  { href: site.links.creator, label: "Samir Puri" },
+  { href: site.links.weights, label: "Jaynepal 1.1 on Hugging Face" },
+  { href: site.links.creator, label: `${site.creator.name} (${site.creator.handle})` },
 ];
 
 const IN_PAGE = [
+  { href: "/docs#model", label: "Model card" },
   { href: "/docs#api", label: "API reference" },
-  { href: "/docs#deploy", label: "Deploying" },
-  { href: "/docs#self-host", label: "Self-hosting the model" },
-  { href: "/docs#attribution", label: "Attribution" },
+  { href: "/docs#access", label: "Access and status" },
+  { href: "/docs#limits", label: "Limits and roadmap" },
 ];
 
 export function SiteFooter() {
@@ -28,13 +28,13 @@ export function SiteFooter() {
                 {site.name}
               </span>
               <span className="rounded border border-[var(--border-strong)] px-1.5 py-0.5 font-mono text-[10px] leading-none text-[var(--muted)]">
-                {site.version}
+                {site.model.version}
               </span>
             </div>
-            <p className="mt-3 max-w-[42ch] text-[13.5px] leading-relaxed text-[var(--muted)]">
-              An early-stage, open-source AI developer tool from Nepal. The
-              client is {site.license}-licensed and yours to fork; the hosted
-              cloud is ours to run.
+            <p className="mt-3 max-w-[44ch] text-[13.5px] leading-relaxed text-[var(--muted)]">
+              {site.model.name} is a Nepali language model made in Nepal and
+              served from a hosted, OpenAI-compatible endpoint at{" "}
+              {site.domain}.
             </p>
             <p className="mt-4 font-mono text-[10.5px] uppercase tracking-[0.12em] text-[var(--faint)]">
               Made in Nepal · {site.creator.place}

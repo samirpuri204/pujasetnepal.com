@@ -10,8 +10,9 @@ import "./globals.css";
 /**
  * Type pairing: IBM Plex Sans for prose, JetBrains Mono for labels, metadata
  * and code. Chosen over the more common Inter/Geist default because this is a
- * tool with status, counters and identifiers all over it, and a mono face gives
- * those a distinct voice instead of flattening everything into one sans.
+ * technical page with identifiers, endpoints and parameters all over it, and a
+ * mono face gives those a distinct voice instead of flattening everything into
+ * one sans.
  *
  * Noto Sans Devanagari is not decorative. IBM Plex Sans ships no Devanagari
  * glyphs, so without a dedicated face the browser substitutes whatever the
@@ -53,15 +54,16 @@ export const metadata: Metadata = {
   authors: [{ name: site.creator.name, url: site.links.creator }],
   creator: site.creator.name,
   keywords: [
-    "Nepali AI",
+    "Jaynepal 1.1",
     "Nepali language model",
+    "Nepali AI",
     "Nepal",
-    "open source AI",
     "Devanagari",
+    "Romanised Nepali",
     "LLM",
-    "chat interface",
-    "Next.js",
-    "developer platform",
+    "OpenAI-compatible API",
+    "hosted inference",
+    "Puja Set Nepal",
   ],
   alternates: { canonical: "/" },
   openGraph: {

@@ -32,8 +32,6 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-# ...but the template is meant to be committed: the README tells people to copy it.
-!.env.example
 
 # vercel
 .vercel

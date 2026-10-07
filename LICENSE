@@ -22,7 +22,6 @@ SOFTWARE.
 
 ---
 
-Note on scope: this licence covers this repository — the chat client, the
-streaming proxy and the design system. It does not cover the model weights. The
-fine-tuned adapter is published separately, and the base weights it was trained
-on (Qwen/Qwen3.5-9B) remain under their own Apache-2.0 licence.
+Scope: this licence covers the source in this repository — the landing page and
+documentation site. It does not cover the Jaynepal 1.1 model, which is published
+separately under its own terms.

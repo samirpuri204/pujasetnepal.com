@@ -1,39 +1,42 @@
 /**
  * One place for every brand string, URL and product fact the UI renders.
  *
- * Why a module instead of literals scattered across components: this project
- * was previously published under a different name, and renaming it meant
- * touching metadata, the sidebar, the empty state, the header and the system
- * prompt independently — the kind of change that always leaves one string
- * behind. Names, domains and version numbers are data, so they live in data.
- *
- * Provenance is recorded here on purpose. `Puja Set Nepal` is the product and
- * the brand; the served weights are the `jaynepal-1.1` LoRA adapter on top of
- * an Apache-2.0 base. Stating that plainly in one place is what makes the
- * ownership claim hold up in the documentation.
+ * Names, domains and version numbers are data, so they live in data: a rename
+ * should be one file, not a hunt through metadata, headers and footers that
+ * leaves one string behind.
  */
 
 export const site = {
+  /** The platform. */
   name: "Puja Set Nepal",
-  /** Rendered in the wordmark and metadata title suffix. */
-  title: "Puja Set Nepal — Nepali AI, open source and hosted",
-  tagline: "Nepali-first AI, open source and hosted.",
+  title: "Jaynepal 1.1 — a Nepali language model, hosted",
+  tagline: "A Nepali language model, made in Nepal and served over an API.",
   description:
-    "An early-stage AI developer platform from Nepal. We publish an open-source Nepali chat stack and run the hosted cloud that serves it — self-host the client, point it at any OpenAI-compatible endpoint, or just use ours.",
+    "Jaynepal 1.1 is a Nepali-first language model made in Nepal. It answers in Nepali, Romanised Nepali or English, and it is served from a hosted, OpenAI-compatible endpoint — so you can build on it without running a GPU.",
 
   domain: "pujasetnepal.com",
   url: "https://pujasetnepal.com",
 
-  /** The product generation shown next to the wordmark and in the chat header. */
-  version: "1.1",
-
+  /** The model. This is the product; the platform is how you reach it. */
   model: {
-    /** The id sent in the request body; also the id the adapter is published under. */
+    name: "Jaynepal 1.1",
+    /** The id sent as `model` in a request body. */
     id: "jaynepal-1.1",
-    /** How the model presents itself in conversation. */
-    label: "Puja Set Nepal 1.1",
-    base: "Qwen/Qwen3.5-9B",
-    params: "9B",
+    version: "1.1",
+    parameters: "9B",
+    languages: ["Nepali (Devanagari)", "Romanised Nepali", "English"],
+    context: "8,192 tokens",
+    defaults: {
+      temperature: "0.7",
+      maxTokens: "1024",
+    },
+  },
+
+  api: {
+    /** Canonical base URL for the hosted endpoint. */
+    baseUrl: "https://pujasetnepal.com/v1",
+    modelsUrl: "https://pujasetnepal.com/v1/models",
+    completionsUrl: "https://pujasetnepal.com/v1/chat/completions",
   },
 
   links: {
@@ -56,5 +59,5 @@ export const site = {
 export const nav = [
   { href: "/", label: "Product" },
   { href: "/docs", label: "Documentation" },
-  { href: "/chat", label: "Open the chat" },
+  { href: "/docs#api", label: "API reference" },
 ] as const;

@@ -2,7 +2,7 @@
   "name": "pujasetnepal",
   "version": "1.1.0",
   "private": true,
-  "description": "Puja Set Nepal — open-source Nepali AI chat client and streaming proxy, with a hosted cloud behind it",
+  "description": "pujasetnepal.com — landing page and documentation for Jaynepal 1.1, a Nepali language model served from a hosted, OpenAI-compatible API",
   "homepage": "https://pujasetnepal.com",
   "repository": {
     "type": "git",
@@ -28,9 +28,6 @@
     "next": "16.3.8",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "react-markdown": "^10.1.0",
-    "rehype-highlight": "^7.0.2",
-    "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
